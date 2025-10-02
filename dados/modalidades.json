@@ -1,0 +1,18 @@
+[
+    {
+        "cod_Modalidade": "1",
+        "descricao": "Somente Academia",
+        "cod_Professor": 1,
+        "valor_Aula": 95.00,
+        "limite_Alunos": 100,
+        "total_Alunos": 2
+    },
+    {
+        "cod_Modalidade": "2",
+        "descricao": "Academia e Jiu Jitsu",
+        "cod_Professor": 1,
+        "valor_Aula": 150.00,
+        "limite_Alunos": 50,
+        "total_Alunos": 5
+    }
+]

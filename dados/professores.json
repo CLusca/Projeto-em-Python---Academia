@@ -1,0 +1,11 @@
+[
+    {
+        "cod_Professor": "1",
+        "nome": "Weverton",
+        "rua": "Felix de Castro",
+        "bairro": "Centro",
+        "numero": 125,
+        "telefone": 14997172324,
+        "cod_cidade": "2"
+    }
+]
