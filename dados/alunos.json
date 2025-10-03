@@ -14,5 +14,21 @@
         "data_Nascimento": "06-07-2004",
         "peso": 65,
         "altura": 1.70
+    },
+    {
+        "cod_Aluno": "3",
+        "nome": "João",
+        "cod_cidade": "1",
+        "data_Nascimento": "06-07-2004",
+        "peso": 65,
+        "altura": 1.70
+    },
+    {
+        "cod_Aluno": "4",
+        "nome": "Mauro",
+        "cod_cidade": "1",
+        "data_Nascimento": "06-07-2004",
+        "peso": 65,
+        "altura": 1.70
     }
 ]

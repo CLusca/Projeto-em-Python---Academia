@@ -10,7 +10,9 @@ padrao_num = r'\D'
 def criarIndice(arquivo,cod_Tipo):
     indice = {}
     for i, item in enumerate(arquivo):
-        if item[cod_Tipo] is not None:
+        if item[cod_Tipo] is not None and item[cod_Tipo].isdigit() == False:
+            indice[item[cod_Tipo].strip().lower()] = i
+        else:
             indice[item[cod_Tipo]] = i
     return indice
 
@@ -36,12 +38,32 @@ def inserir(raiz, valor, codigo):
         raiz.direita = inserir(raiz.direita, valor, codigo)
     return raiz
 
-def consultar(raiz, valorBuscado):
-    if raiz is None or raiz.valor == valorBuscado:
-        return raiz
-    elif valorBuscado < raiz.valor:
-        return consultar(raiz.esquerda, valorBuscado)
-    return consultar(raiz.direita, valorBuscado)
+def consultar(raiz, valor_buscado, forma_busca):
+     if forma_busca == True:
+        if valor_buscado.isdigit() == False:
+                valor_buscado = valor_buscado.strip().lower()
+        if raiz is None:
+            print("Valor nao encontrado")
+            return raiz
+        if raiz.valor == valor_buscado:
+            print(f"{raiz.indice}, {raiz.valor}")
+            return raiz.valor
+        elif valor_buscado < raiz.valor:
+            return consultar(raiz.esquerda, valor_buscado)
+        return consultar(raiz.direita, valor_buscado)
+     else:
+        if valor_buscado.isdigit() == False:
+            print("Valor invalido para busca de indice")
+            return
+        if raiz is None:
+            print("Valor nao encontrado")
+            return raiz
+        if raiz.indice == valor_buscado:
+            print(f"{raiz.indice}, {raiz.valor}")
+            return raiz.valor
+        elif valor_buscado < raiz.indice:
+            return consultar(raiz.esquerda, valor_buscado)
+        return consultar(raiz.direita, valor_buscado)
 
 def exclusão (raiz, valor):
     if raiz is None:
@@ -86,20 +108,50 @@ def buscaExaustiva(listaDeDados, campoBusca, valorBuscado):
         infos = resultados[0]
         return infos
     
-def listarTudo(listaDeDados):
-    resultados = []
+def listarTudo(raiz):
+    if raiz is None:
+        print ("Nada encontrado")
+        return
+    elif raiz.esquerda is not None:
+        listarTudo(raiz.esquerda)
+    print(f"{raiz.indice}, {raiz.valor.title()}")
+    if raiz.direita is not None:
+        listarTudo(raiz.direita)
 
-    for registro in listaDeDados:
+def buscarAluno(arvoreAluno, arvoreCidade):
+    os.system('cls')
+    print("*--- Escolha uma das Opções Abaixo ---*")
+    print("\n ---* Buscar Aluno *---")
+    print("1 - Listar Indices e Nomes")
+    print("2 - Buscar por Nome")
+    print("3 - Buscar por indice")
+    print("0 - Retornar")
+    opcao_bruta = input("Opcao: ")
 
-        if registro is None:
-            continue
-        
-        resultados.append(registro)
+    opcao_tratada = re.sub(padrao_num, '', opcao_bruta)
 
-    if resultados == []:
-        return 0
-    else: 
-        return resultados
+    
+    match opcao_tratada:
+        case '1':
+            os.system('cls')
+            listarTudo (arvoreAluno)
+            continuar = input("Aperte Enter para continuar...")
+            match continuar:
+                case '':
+                    return
+        case '2':
+            os.system('cls')
+            input_nome = input("Qual o Nome do Aluno: ").strip().lower()
+            consultar (arvoreAluno, input_nome, True)
+            
+        case '3':
+            os.system('cls')
+            input_indice= input("Qual o Indice do Aluno: ").strip()
+            consultar (arvoreAluno, input_indice, False)
+            
+        case '0':
+            return
+
 
 def contador_5_segundos():
     print("\n ---* Limpando a tela Em *---")
@@ -114,119 +166,28 @@ def contador_5_segundos():
     print("1 Segundo")
     time.sleep(1)
 
-def alunos():
-    while True:
-        os.system('cls')
-        
-        entrada_bruta = input("Insira o Nome do Aluno(ou 0 para Sair): ")
+while True:
+    dadosAlunos      = carregarDados('./dados/alunos.json')
+    dadosCidades     = carregarDados('./dados/cidade.json')
+    dadosProfessores = carregarDados('./dados/professores.json')
+    dadosModalidades = carregarDados('./dados/modalidades.json')
+    dadosMatriculas  = carregarDados('./dados/matriculas.json')
 
-        if entrada_bruta == "0":
-            return
+    indice_alunos = criarIndice(dadosAlunos,"nome".strip().lower())
+    indice_cidades =  criarIndice(dadosCidades,"descricao".strip().lower())
+    indice_professores = criarIndice(dadosProfessores,"nome".strip().lower())
+    indice_modalidades = criarIndice(dadosModalidades,"descricao".strip().lower())
+    indice_matriculas =criarIndice(dadosMatriculas,"cod_Matricula")
 
-        entrada_tratado = re.sub(padrao_str, '', entrada_bruta)
-        json_aluno         = buscaExaustiva(dadosAlunos, "nome", entrada_tratado)
-        
-        if json_aluno == 0:
-            print("Nenhum Aluno Encontrado!")
-            time.sleep(2)
-            continue
+    arvore_alunos = construirArvore(indice_alunos)
+    arvore_cidades = construirArvore(indice_cidades)
+    arvore_professores = construirArvore(indice_professores)
+    arvore_modalidades = construirArvore(indice_modalidades)
+    arvore_matriculas = construirArvore(indice_matriculas)   
 
-        nome_aluno         = json_aluno['nome']
-        codigo_cidade      = json_aluno['cod_cidade']
-        imc_aluno          = round(json_aluno['peso'] / (json_aluno['altura'] * json_aluno['altura']), 2)
-
-        classif_imc = "Baixo Peso"
-
-        if imc_aluno >= 18.6 and imc_aluno <= 24.9 :
-            classif_imc = "Peso Normal"
-        elif imc_aluno >= 25 and imc_aluno <= 29.9:
-            classif_imc = "Sobrepeso"
-        elif(imc_aluno >= 30):
-            classif_imc = "Obeso"
-
-        if codigo_cidade == 0:
-            print("Não Encontrei, Desculpa")
-        else: 
-            json_cidade = buscaExaustiva(dadosCidades, 'cod_cidade', codigo_cidade)
-            print(f"Aluno: " + nome_aluno)
-            print(f"IMC: " + str(imc_aluno))
-            print(f"Classificacao IMC: " + str(classif_imc))
-            print("Cidade: " + json_cidade['descricao'] + " - Estado: " + json_cidade['estado'])
-
-            contador_5_segundos()
-            continue
-            
-def professor():
-    while True:
-        os.system('cls')
-        
-        entrada_bruta    = input("Insira o Nome do Professor: ")
-        entrada_tratada  = re.sub(padrao_str, '', entrada_bruta)
-        json_professor   = buscaExaustiva(dadosProfessores, "nome", entrada_tratada)
-
-        if json_professor == 0:
-            print("Nenhum Professor Encontrado!")
-            time.sleep(2)
-            continue
-
-        nome_professor   = json_professor['nome']
-        codigo_cidade    = json_professor['cod_cidade']
-
-        if codigo_cidade == 0:
-            print("Não Encontrei, Desculpa")
-        else: 
-            json_cidade = buscaExaustiva(dadosCidades, 'cod_cidade', codigo_cidade)
-            print(f"Aluno: " + nome_professor)
-            print("Cidade: " + json_cidade['descricao'] + " - Estado: " + json_cidade['estado'])
-
-            contador_5_segundos()
-            continue
-
-def modalidades():
-    while True:
-        os.system('cls')
-        print(listarTudo(dadosModalidades))
-        # print("*--- Escolha uma das Opções Abaixo ---*")
-        # print("1 - Somenta Academia")
-        # print("2 - Academia e Jiu Jitsu")
-        # print("0 - Sair")
-
-        entrada_bruta    = input("Opcao: ")
-        entrada_tratada  = re.sub(padrao_str, '', entrada_bruta)                
-
-        json_modalidade  = buscaExaustiva(dadosProfessores, "nome", entrada_tratada)
-
-        if json_modalidade == 0:
-            print("Nenhuma Modalidade Encontrada!")
-            time.sleep(2)
-            continue
-
-        nome_professor   = json_modalidade['nome']
-        codigo_cidade    = json_modalidade['cod_cidade']
-
-        if codigo_cidade == 0:
-            print("Não Encontrei, Desculpa")
-        else: 
-            json_cidade = buscaExaustiva(dadosCidades, 'cod_cidade', codigo_cidade)
-            print(f"Aluno: " + nome_professor)
-            print("Cidade: " + json_cidade['descricao'] + " - Estado: " + json_cidade['estado'])
-
-            contador_5_segundos()
-            continue
-
-dadosAlunos      = carregarDados('./dados/alunos.json')
-dadosCidades     = carregarDados('./dados/cidade.json')
-dadosProfessores = carregarDados('./dados/professores.json')
-dadosModalidades = carregarDados('./dados/modalidades.json')
-dadosMatriculas  = carregarDados('./dados/matriculas.json')
-
-
-
-while True:   
     print("*--- Escolha uma das Opções Abaixo ---*")
-    print("1 - Aluno")
-    print("2 - Professor")
-    print("3 - Modalidades")
+    print("1 - Listar Todos os Alunos")
+    print("2 - Listar Todos os Cidades")
     print("0 - Sair")
 
     opcao_bruta = input("Opcao: ")
@@ -235,61 +196,9 @@ while True:
 
     match opcao_tratada:
         case '1':
-            alunos()
-        case '2':
-            professor()
-        case '3':
-            modalidades()
+            buscarAluno(arvore_alunos, arvore_cidades)
         case '0':
             print('Saindo do Sistema')
             break
         case _:
-            print('ESCOLHA CERTO VIADO')
-
-
-
-
-
-
-
-
-
-# print("--- Buscando aluno com nome 'Camila' ---")
-# alunosEncontrados = buscaExaustiva(dadosAlunos, "nome", "camila")
-# if alunosEncontrados:
-#     print(f"Encontrado(s) {len(alunosEncontrados)} aluno(s): {alunosEncontrados}")
-# else:
-#     print("Nenhum aluno encontrado.")
-
-# print("\n--- Buscando professor com nome 'Weverton' ---")
-# professoresEncontrados = buscaExaustiva(dadosProfessores, "nome", "weverton")
-# if professoresEncontrados:
-#     print(f"Encontrado(s) {len(professoresEncontrados)} professor(es): {professoresEncontrados}")
-# else:
-#     print("Nenhum professor encontrado.")
-
-# print("\n--- Buscando cidades do estado 'SP' ---")
-# cidadesEncontradas = buscaExaustiva(dadosCidades, "estado", "sp")
-# if cidadesEncontradas:
-#     print(f"Encontrada(s) {len(cidadesEncontradas)} cidade(s): {cidadesEncontradas}")
-# else:
-#     print("Nenhuma cidade encontrada.")
-    
-# print("\n--- Buscando modalidade com descrição 'Somente Academia' ---")
-# modalidadesEncontradas = buscaExaustiva(dadosModalidades, "descricao", "somente academia")
-# if modalidadesEncontradas:
-#     print(f"Encontrada(s) {len(modalidadesEncontradas)} modalidade(s): {modalidadesEncontradas}")
-# else:
-#     print("Nenhuma modalidade encontrada.")
-
-# print("\n--- Buscando matrículas do aluno com código 1 ---")
-# matriculasEncontradas = buscaExaustiva(dadosMatriculas, "cod_Aluno", 1)
-# if matriculasEncontradas:
-#     print(f"Encontrada(s) {len(matriculasEncontradas)} matrícula(s): {matriculasEncontradas}")
-# else:
-#     print("Nenhuma matrícula encontrada.")
-
-
-
-
-
+            print('Escolha uma opcao valida')
