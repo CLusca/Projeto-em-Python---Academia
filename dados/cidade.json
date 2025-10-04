@@ -1,12 +1,22 @@
 [
     {
-        "cod_cidade": "1",
+        "cod_Cidade": "1",
         "descricao": "Assis",
         "estado": "SP"
     },
     {
-        "cod_cidade": "2",
+        "cod_Cidade": "2",
         "descricao": "Ourinhos",
         "estado": "SP"
+    },
+    {
+        "cod_Cidade": "3",
+        "descricao": "Londrina",
+        "estado": "PR"
+    },
+    {
+        "cod_Cidade": "4",
+        "descricao": "Pedro Afonso",
+        "estado": "TO"
     }
 ]

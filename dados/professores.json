@@ -6,6 +6,15 @@
         "bairro": "Centro",
         "numero": 125,
         "telefone": 14997172324,
-        "cod_cidade": "2"
+        "cod_Cidade": "2"
+    },
+    {
+        "cod_Professor": "2",
+        "nome": "Begosso",
+        "rua": "Rua Pedro Alvares Silva",
+        "bairro": "Centro",
+        "numero": "1002",
+        "telefone": "14997172128",
+        "cod_Cidade": "1"
     }
 ]

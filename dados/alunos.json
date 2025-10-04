@@ -2,33 +2,49 @@
     {
         "cod_Aluno": "1",
         "nome": "Lucas",
-        "cod_cidade": "1",
+        "cod_Cidade": "1",
         "data_Nascimento": "11-04-2005",
-        "peso": 75,
-        "altura": 1.80
+        "peso": 76.4,
+        "altura": 1.8
     },
     {
         "cod_Aluno": "2",
         "nome": "Camila",
-        "cod_cidade": "1",
+        "cod_Cidade": "1",
         "data_Nascimento": "06-07-2004",
-        "peso": 65,
-        "altura": 1.70
+        "peso": 64.2,
+        "altura": 1.7
     },
     {
         "cod_Aluno": "3",
         "nome": "João",
-        "cod_cidade": "1",
+        "cod_Cidade": "1",
         "data_Nascimento": "06-07-2004",
         "peso": 65,
-        "altura": 1.70
+        "altura": 1.7
     },
     {
         "cod_Aluno": "4",
         "nome": "Mauro",
-        "cod_cidade": "1",
+        "cod_Cidade": "1",
         "data_Nascimento": "06-07-2004",
         "peso": 65,
-        "altura": 1.70
+        "altura": 1.7
+    },
+    {
+        "cod_Aluno": "5",
+        "nome": "Almir",
+        "cod_Cidade": "1",
+        "data_Nascimento": "01-01-1976",
+        "peso": 160.0,
+        "altura": 1.68
+    },
+    {
+        "cod_Aluno": "6",
+        "nome": "Felps",
+        "cod_Cidade": "1",
+        "data_Nascimento": "06-07-2005",
+        "peso": 86.0,
+        "altura": 1.82
     }
 ]
