@@ -97,15 +97,6 @@ def verificar_vagas_modalidade(arvore_modalidades, dados_modalidades, dados_matr
         case '':
             return
 
-
-
-
-
-
-
-
-
-
 def inserir(raiz, codigo, indice):
     if raiz is None:
         return No(codigo, indice)
@@ -185,7 +176,10 @@ def listarTudo(raiz, dados):
         return
     elif raiz.esquerda is not None:
         listarTudo(raiz.esquerda, dados)
-    print(f"Indice: {raiz.indice}\nDescrição: {dados[raiz.indice]['nome' or 'descricao']}\nCodigo: {raiz.codigo}\n")
+
+    nome = dados[raiz.indice].get('nome') or dados[raiz.indice].get('descricao')
+    
+    print(f"Descrição: {nome}\nCodigo: {raiz.codigo}\n")
     if raiz.direita is not None:
         listarTudo(raiz.direita, dados)
 
@@ -206,10 +200,7 @@ def adicionar_aluno(caminho_arquivo, raiz):
         if consulta_codigo is not None:
             os.system('cls')
             print("Código já existe, tente outro")
-            continuar = input("\nAperte Enter para continuar...")
-            match continuar:
-                case '':
-                    continue
+            input("\nAperte Enter para continuar...")
         else:
             cod_aluno_livre = cod_aluno
             break
@@ -542,7 +533,7 @@ def buscarAluno(arvoreAluno, arvoreCidade, dadosAlunos, dadosCidades):
     os.system('cls')
     print("*--- Escolha uma das Opções Abaixo ---*")
     print(" ---* Buscar Aluno *---")
-    print("\n1 - Listar Indices e Nomes")
+    print("\n1 - Listar Nomes")
     print("2 - Buscar por Codigo")
     print("0 - Retornar")
     opcao_bruta = input("Opcao: ")
@@ -647,6 +638,53 @@ def buscarProfessor(arvoreProfessor, arvoreCidade, dadosProfessor, dadosCidades)
         case '0':
             return
 
+def faturamento(arvoreModalidades, arvoreProfessores, arvoreCidades, dadosModalidade, dadosProfessores, dadosCidades, dadosMatriculas):
+    os.system('cls')
+    print('*--- Faturamento por Modalidades ---*')
+    listarTudo(arvoreModalidades, dadosModalidade)
+    cod_escolhido = input("\nCodigo: ")
+
+    cod_tratado       = re.sub(padrao_num, '', cod_escolhido)
+    indice_modalidade = consultar(arvoreModalidades, cod_tratado)
+
+    if indice_modalidade is None:
+        print("Nenhuma modalidade foi encontrada!")
+        return
+
+    modalidade = dadosModalidade[indice_modalidade]
+
+    indice_professor = consultar(arvoreProfessores, modalidade['cod_Professor'])
+
+    if indice_professor is None:
+        print("Nenhum Professor foi encontrado!")
+        return
+
+    professor = dadosProfessores[indice_professor]
+
+    indice_cidade = consultar(arvoreCidades, professor['cod_Cidade'])
+
+    if indice_cidade is None:
+        print("Nenhuma Cidade foi encontrada!")
+        return
+    
+    cidade = dadosCidades[indice_cidade]
+    
+    print(f"Modalidade: {modalidade['descricao']}")
+    print(f"Professor: {professor['nome']}")
+    print(f"Cidade: {cidade['descricao']}")
+
+    quantAulas = 0
+
+    for matricula in dadosMatriculas:
+        if matricula['cod_Modalidade'] == modalidade['cod_Modalidade']:
+            quantAulas += int(matricula['quant_Aulas'])
+
+    valor_faturado = int(modalidade['total_Alunos']) * (float(modalidade['valor_Aula']) * quantAulas)
+
+    print(f"\n Valor Faturado: R$ {valor_faturado}")
+
+    input("\nAperte Enter para continuar...")
+
 def main ():
     os.system('cls')
     while True:
@@ -672,7 +710,6 @@ def main ():
 
         os.system('cls')
         print("*--- Escolha uma das Opções Abaixo ---*")
-        print(indice_alunos)
         print("1 - Listar Todos os Alunos")
         print("2 - Listar Todos os Professores")
         print("3 - Adicionar Novo Aluno")
@@ -681,9 +718,10 @@ def main ():
         print("6 - Adicionar Novo Modalidade")
         print("7 - Adicionar Nova Matricula")
         print("8 - Remover Matricula")
+        print("9 - Faturamento por Modalidade")
         print("0 - Sair")
 
-        opcao_bruta = input("Opcao: ")
+        opcao_bruta = input("\nOpcao: ")
 
         opcao_tratada = re.sub(padrao_num, '', opcao_bruta)
 
@@ -704,6 +742,8 @@ def main ():
                 adicionar_matricula(dados_gerais)
             case '8':
                 remover_matricula(dados_gerais)
+            case '9':
+                faturamento(arvore_modalidades, arvore_professores, arvore_cidades, dadosModalidades, dadosProfessores, dadosCidades, dadosMatriculas)
             case '0':
                 print('Saindo do Sistema')
                 break
