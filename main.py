@@ -475,6 +475,68 @@ def adicionar_matricula(dados_globais):
     match continuar:
         case '':
             return False
+        
+def remover_matricula(dados_globais):
+    os.system('cls')
+    print("--- Remover Matrícula ---")
+    while True:
+        cod_mat_input = input("Digite o código da matrícula: ").strip()
+
+        if not cod_mat_input.isdigit():
+            print("O código deve ser um número.")
+            continue
+
+        if consultar(dados_globais['arvores']['matriculas'], cod_mat_input) is not None:
+            cod_mat_valido = cod_mat_input
+            break
+        else: 
+            print(f"Matricula {cod_mat_input} não foi encontrada")
+            continue
+
+
+    lista_matriculas    = dados_globais['dados']['matriculas']
+    indice_para_remover = None
+    matricula_removida  = None
+
+    for i, matricula in enumerate(lista_matriculas):
+        if matricula['cod_Matricula'] == cod_mat_valido:
+            indice_para_remover = i
+            matricula_removida  = matricula
+            break
+
+    if indice_para_remover is None:
+        print(f"\nMatrícula com código '{cod_mat_valido}' não encontrada.")
+        input("Aperte Enter para continuar...")
+        return
+
+    print(f"Matrícula '{cod_mat_valido}' encontrada. Removendo...")
+    lista_matriculas.pop(indice_para_remover)
+    
+    if not salvar_dados('./dados/matriculas.json', lista_matriculas):
+        print("Falha ao remover a matrícula. Operação cancelada.")
+        continuar = input("\nAperte Enter para continuar...")
+        match continuar:
+            case '':
+                return False
+            
+    print("Atualizando total de alunos na modalidade...")
+    cod_mod = matricula_removida['cod_Modalidade']
+    
+    indice_modalidade = consultar(dados_globais['arvores']['modalidades'], cod_mod)
+
+    if indice_modalidade is not None:
+        dados_modalidades = dados_globais['dados']['modalidades']
+        total_atual       = int(dados_modalidades[indice_modalidade]['total_Alunos'])
+        
+        dados_modalidades[indice_modalidade]['total_Alunos'] = str(total_atual - 1)
+        
+        salvar_dados('./dados/modalidades.json', dados_modalidades)
+        print("\nTotal de alunos na modalidade foi atualizado.")
+    else:
+        print(f"Aviso: A modalidade com código {cod_mod} não foi encontrada para atualizar o total de alunos.")
+
+    print("\nOperação de remoção concluída com sucesso!")
+    input("Aperte Enter para continuar...")
 
 def buscarAluno(arvoreAluno, arvoreCidade, dadosAlunos, dadosCidades):
     os.system('cls')
@@ -560,6 +622,7 @@ def buscarProfessor(arvoreProfessor, arvoreCidade, dadosProfessor, dadosCidades)
             if input_nome.isdigit() == False:
                 print("Codigo invalido")
                 return
+            
             indice_consulta = consultar (arvoreProfessor, input_nome)
             professor = dadosProfessor[indice_consulta]
             if indice_consulta is not None:
@@ -583,40 +646,27 @@ def buscarProfessor(arvoreProfessor, arvoreCidade, dadosProfessor, dadosCidades)
             
         case '0':
             return
-        
-def contador_5_segundos():
-    print("\n ---* Limpando a tela Em *---")
-    print("5 Segundos")
-    time.sleep(1)
-    print("4 Segundos")
-    time.sleep(1)
-    print("3 Segundos")
-    time.sleep(1)
-    print("2 Segundos")
-    time.sleep(1)
-    print("1 Segundo")
-    time.sleep(1)
 
 def main ():
     os.system('cls')
     while True:
-        dadosAlunos      = carregarDados('./dados/alunos.json')
-        dadosCidades     = carregarDados('./dados/cidade.json')
-        dadosProfessores = carregarDados('./dados/professores.json')
-        dadosModalidades = carregarDados('./dados/modalidades.json')
-        dadosMatriculas  = carregarDados('./dados/matriculas.json')
+        dadosAlunos        = carregarDados('./dados/alunos.json')
+        dadosCidades       = carregarDados('./dados/cidade.json')
+        dadosProfessores   = carregarDados('./dados/professores.json')
+        dadosModalidades   = carregarDados('./dados/modalidades.json')
+        dadosMatriculas    = carregarDados('./dados/matriculas.json')
 
-        indice_alunos = criarIndice(dadosAlunos, "cod_Aluno")
-        indice_cidades = criarIndice(dadosCidades, "cod_Cidade")
+        indice_alunos      = criarIndice(dadosAlunos, "cod_Aluno")
+        indice_cidades     = criarIndice(dadosCidades, "cod_Cidade")
         indice_professores = criarIndice(dadosProfessores, "cod_Professor")
         indice_modalidades = criarIndice(dadosModalidades, "cod_Modalidade")
-        indice_matriculas =criarIndice(dadosMatriculas, "cod_Matricula")
+        indice_matriculas  = criarIndice(dadosMatriculas, "cod_Matricula")
 
-        arvore_alunos = construirArvore(indice_alunos)
-        arvore_cidades = construirArvore(indice_cidades)
+        arvore_alunos      = construirArvore(indice_alunos)
+        arvore_cidades     = construirArvore(indice_cidades)
         arvore_professores = construirArvore(indice_professores)
         arvore_modalidades = construirArvore(indice_modalidades)
-        arvore_matriculas = construirArvore(indice_matriculas) 
+        arvore_matriculas  = construirArvore(indice_matriculas) 
 
         dados_gerais = carregar_json() 
 
@@ -630,6 +680,7 @@ def main ():
         print("5 - Adicionar Novo Cidade")
         print("6 - Adicionar Novo Modalidade")
         print("7 - Adicionar Nova Matricula")
+        print("8 - Remover Matricula")
         print("0 - Sair")
 
         opcao_bruta = input("Opcao: ")
@@ -651,6 +702,8 @@ def main ():
                 adicionar_modalidade('./dados/modalidades.json', arvore_modalidades)
             case '7':
                 adicionar_matricula(dados_gerais)
+            case '8':
+                remover_matricula(dados_gerais)
             case '0':
                 print('Saindo do Sistema')
                 break
