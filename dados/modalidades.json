@@ -5,7 +5,7 @@
         "cod_Professor": 1,
         "valor_Aula": 95.0,
         "limite_Alunos": 100,
-        "total_Alunos": 2
+        "total_Alunos": "1"
     },
     {
         "cod_Modalidade": "2",
@@ -13,7 +13,7 @@
         "cod_Professor": 1,
         "valor_Aula": 150.0,
         "limite_Alunos": 50,
-        "total_Alunos": 5
+        "total_Alunos": "2"
     },
     {
         "cod_Modalidade": "3",
@@ -21,6 +21,6 @@
         "cod_Professor": "2",
         "valor_Aula": "198.00",
         "limite_Alunos": "50",
-        "total_Alunos": "0"
+        "total_Alunos": "1"
     }
 ]

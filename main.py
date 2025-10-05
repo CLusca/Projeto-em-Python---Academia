@@ -29,6 +29,83 @@ def construirArvore(indice):
         raiz = inserir(raiz,codigo, indice_json)
     return raiz
 
+def carregar_json():
+    dados = {
+        'alunos': carregarDados('./dados/alunos.json'),
+        'cidades': carregarDados('./dados/cidade.json'),
+        'professores': carregarDados('./dados/professores.json'),
+        'modalidades': carregarDados('./dados/modalidades.json'),
+        'matriculas': carregarDados('./dados/matriculas.json')
+    }
+
+    indices = {
+        'alunos': criarIndice(dados['alunos'], "cod_Aluno"),
+        'cidades': criarIndice(dados['cidades'], "cod_Cidade"),
+        'professores': criarIndice(dados['professores'], "cod_Professor"),
+        'modalidades': criarIndice(dados['modalidades'], "cod_Modalidade"),
+        'matriculas': criarIndice(dados['matriculas'], "cod_Matricula")
+    }
+
+    arvores = {
+        'alunos': construirArvore(indices['alunos']),
+        'cidades': construirArvore(indices['cidades']),
+        'professores': construirArvore(indices['professores']),
+        'modalidades': construirArvore(indices['modalidades']),
+        'matriculas': construirArvore(indices['matriculas'])
+    }
+    return {'dados': dados, 'indices': indices, 'arvores': arvores}
+
+def contar_matriculas(cod_modalidade, lista_de_matriculas):
+    contador = 0
+    cod_modalidade_int = int(cod_modalidade)
+    for matricula in lista_de_matriculas:
+        if int(matricula['cod_Modalidade']) == cod_modalidade_int:
+            contador += 1
+    return contador
+
+
+def verificar_vagas_modalidade(arvore_modalidades, dados_modalidades, dados_matriculas):
+    os.system('cls')
+    print("--- Verificar Vagas por Modalidade ---")
+    while True:
+        cod_mod = input("Digite o código da modalidade para verificar as vagas: ").strip()
+        if cod_mod.isdigit():
+            break
+        else:
+            print("Código inválido. Por favor, digite apenas números.")
+    indice_modalidade = consultar(arvore_modalidades, cod_mod)
+    
+    if indice_modalidade is None:
+        print("\nModalidade não encontrada.")
+        time.sleep(2)
+        return
+    modalidade = dados_modalidades[indice_modalidade]
+    limite_vagas = int(modalidade['limite_Alunos'])
+    alunos_matriculados = contar_matriculas(cod_mod, dados_matriculas)
+    vagas_disponiveis = limite_vagas - alunos_matriculados
+    
+    print(f"\n--- Relatório de Vagas para: {modalidade['descricao']} ---")
+    print(f"Limite de Vagas na Modalidade: {limite_vagas}")
+    print(f"Total de Alunos Já Matriculados: {alunos_matriculados}")
+    
+    if vagas_disponiveis > 0:
+        print(f"Vagas Disponíveis: {vagas_disponiveis}")
+    else:
+        print("Não há vagas disponíveis para esta modalidade.")
+    continuar = input("\nPressione Enter para continuar...")
+    match continuar:
+        case '':
+            return
+
+
+
+
+
+
+
+
+
+
 def inserir(raiz, codigo, indice):
     if raiz is None:
         return No(codigo, indice)
@@ -69,6 +146,15 @@ def carregarDados(caminho_arquivo):
     except FileNotFoundError:
         print(f"Arquivo '{caminho_arquivo}' não foi encontrado.")
         return []
+
+def salvar_dados(caminho_arquivo, dados):
+    try:
+        with open(caminho_arquivo, 'w', encoding='utf-8') as f:
+            json.dump(dados, f, indent=4, ensure_ascii=False)
+        return True
+    except IOError as e:
+        print(f"\nERRO CRÍTICO ao salvar o arquivo {caminho_arquivo}: {e}")
+        return False
 
 def buscaExaustiva(listaDeDados, campoBusca, valorBuscado):
     resultados = []
@@ -297,49 +383,98 @@ def adicionar_modalidade(caminho_arquivo, raiz):
     except IOError as e:
         print(f"\nErro ao salvar o arquivo")
 
-def adicionar_matricula(caminho_arquivo, raiz):
+def adicionar_matricula(dados_globais):
     os.system('cls')
-    print("--- Adicionar Nova Matricula ---")
-    
+    print("--- Adicionar Nova Matrícula ---")
     while True:
-        os.system('cls')
-        cod_mat = input("Digite o código da nova matricula: ").strip()
-        consulta_codigo = consultar(raiz, cod_mat)
-        if cod_mat.isdigit() == False:
-            print("Código inválido, deve ser um número")
-            continuar = input("\nAperte Enter para continuar...")
-            match continuar:
-                case '':
-                    continue
-        if consulta_codigo is not None:
-            os.system('cls')
-            print("Código já existe, tente outro")
-            continuar = input("\nAperte Enter para continuar...")
-            match continuar:
-                case '':
-                    continue
+        cod_mat_input = input("Digite o código da nova matrícula: ").strip()
+        if not cod_mat_input.isdigit():
+            print("O código deve ser um número.")
+            continue
+        if consultar(dados_globais['arvores']['matriculas'], cod_mat_input) is not None:
+            print("Este código de matrícula já está em uso.")
+            continue
+        cod_mat_valido = cod_mat_input
+        break
+    while True:
+        cod_aluno_input = input("Digite o CÓDIGO do aluno a ser matriculado: ").strip()
+        indice_aluno = consultar(dados_globais['arvores']['alunos'], cod_aluno_input)
+        if indice_aluno is None:
+            print("Aluno não encontrado. Tente novamente.")
+            continue
+        aluno = dados_globais['dados']['alunos'][indice_aluno]
+        indice_cidade = consultar(dados_globais['arvores']['cidades'], aluno['cod_Cidade'])
+        cidade_nome = dados_globais['dados']['cidades'][indice_cidade]['descricao'] if indice_cidade is not None else "N/A"
+        print(f"\nAluno encontrado: {aluno['nome']} (de {cidade_nome})")
+        cod_aluno_valido = cod_aluno_input
+        break
+    modalidade_selecionada = None
+    while True:
+        cod_mod_input = input("Digite o código da modalidade: ").strip()
+        indice_modalidade = consultar(dados_globais['arvores']['modalidades'], cod_mod_input)
+        if indice_modalidade is None:
+            print("Modalidade não encontrada.")
+            continue
+        modalidade = dados_globais['dados']['modalidades'][indice_modalidade]
+        print(f"\nModalidade encontrada: {modalidade['descricao']}")
+        limite_vagas = int(modalidade['limite_Alunos'])
+        alunos_matriculados = contar_matriculas(cod_mod_input, dados_globais['dados']['matriculas'])
+        if alunos_matriculados >= limite_vagas:
+            print(f"TURMA LOTADA! (Limite: {limite_vagas}, Ocupadas: {alunos_matriculados})")
+            if input("Deseja tentar outra modalidade? (s/n): ").lower() != 's':
+                print("Matrícula cancelada.")
+                continuar = input("\nAperte Enter para continuar...")
+                match continuar:
+                    case '':
+                        return False
         else:
-            cod_mat_livre = cod_mat
+            print(f"Vaga disponível! (Limite: {limite_vagas}, Ocupadas: {alunos_matriculados})")
+            cod_mod_valido = cod_mod_input
+            modalidade_selecionada = modalidade
             break
-
-    cod_aluno = input("Digite o codigo do aluno: ").strip()
-    cod_mod = input("Digite o codigo da modalidade: ").strip()
-    quant_aulas = input("Digite a quantidade de aulas: ").strip()
-    nova_mat = {
-        "cod_Matricula": cod_mat_livre,
-        "cod_Aluno": cod_aluno,
-        "cod_Modalidade": cod_mod,
-        "quant_Aulas": quant_aulas,
+    while True:
+        quant_aulas = input("Digite a quantidade de aulas: ").strip()
+        if quant_aulas.isdigit():
+            quant_aulas_valida = int(quant_aulas)
+            break
+        else:
+            print("A quantidade de aulas deve ser um número.")
+    valor_aula = float(modalidade_selecionada['valor_Aula'])
+    valor_total = valor_aula * quant_aulas_valida
+    print(f"\nValor a ser pago ({quant_aulas_valida} aulas * R${valor_aula:.2f}): R$ {valor_total:.2f}")
+    if input("Confirmar matrícula com este valor? (s/n): ").lower() != 's':
+        print("Matrícula cancelada.")
+        continuar = input("\nAperte Enter para continuar...")
+        match continuar:
+            case '':
+                return False
+        return False
+    nova_matricula = {
+        "cod_Matricula": cod_mat_valido,
+        "cod_Aluno": cod_aluno_valido,
+        "cod_Modalidade": cod_mod_valido,
+        "quant_Aulas": str(quant_aulas_valida)
     }
-    lista_de_matriculas = carregarDados(caminho_arquivo)
-    lista_de_matriculas.append(nova_mat)
-    try:
-        with open(caminho_arquivo, 'w', encoding='utf-8') as f:
-            json.dump(lista_de_matriculas, f, indent=4, ensure_ascii=False)
-        
-        print("\nMatricula adicionada")
-    except IOError as e:
-        print(f"\nErro ao salvar o arquivo")
+    lista_matriculas = dados_globais['dados']['matriculas']
+    lista_matriculas.append(nova_matricula)
+    if not salvar_dados('./dados/matriculas.json', lista_matriculas):
+        print("Falha ao salvar a nova matrícula. Operação cancelada.")
+        continuar = input("\nAperte Enter para continuar...")
+        match continuar:
+            case '':
+                return False
+    print("Atualizando total de alunos na modalidade...")
+    indice_modalidade = consultar(dados_globais['arvores']['modalidades'], cod_mod_valido)
+    if indice_modalidade is not None:
+        dados_modalidades_atualizados = dados_globais['dados']['modalidades']
+        total_atual = int(dados_modalidades_atualizados[indice_modalidade]['total_Alunos'])
+        dados_modalidades_atualizados[indice_modalidade]['total_Alunos'] = str(total_atual + 1)
+        salvar_dados('./dados/modalidades.json', dados_modalidades_atualizados)
+    print("\nMatrícula realizada e total de alunos atualizado com sucesso!")
+    continuar = input("\nAperte Enter para continuar...")
+    match continuar:
+        case '':
+            return False
 
 def buscarAluno(arvoreAluno, arvoreCidade, dadosAlunos, dadosCidades):
     os.system('cls')
@@ -349,10 +484,7 @@ def buscarAluno(arvoreAluno, arvoreCidade, dadosAlunos, dadosCidades):
     print("2 - Buscar por Codigo")
     print("0 - Retornar")
     opcao_bruta = input("Opcao: ")
-
     opcao_tratada = re.sub(padrao_num, '', opcao_bruta)
-
-    
     match opcao_tratada:
         case '1':
             os.system('cls')
@@ -361,7 +493,6 @@ def buscarAluno(arvoreAluno, arvoreCidade, dadosAlunos, dadosCidades):
             match continuar:
                 case '':
                     return
-                
         case '2':
             os.system('cls')
             input_nome = input("Codigo do Aluno: ").strip()
@@ -485,7 +616,9 @@ def main ():
         arvore_cidades = construirArvore(indice_cidades)
         arvore_professores = construirArvore(indice_professores)
         arvore_modalidades = construirArvore(indice_modalidades)
-        arvore_matriculas = construirArvore(indice_matriculas)   
+        arvore_matriculas = construirArvore(indice_matriculas) 
+
+        dados_gerais = carregar_json() 
 
         os.system('cls')
         print("*--- Escolha uma das Opções Abaixo ---*")
@@ -517,7 +650,7 @@ def main ():
             case '6':
                 adicionar_modalidade('./dados/modalidades.json', arvore_modalidades)
             case '7':
-                adicionar_matricula('./dados/matriculas.json', arvore_matriculas)  
+                adicionar_matricula(dados_gerais)
             case '0':
                 print('Saindo do Sistema')
                 break
